@@ -14,7 +14,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintHorizontal_bias="0.065"
-        app:layout_constraintVertical_bias="0.004"
+        app:layout_constraintVertical_bias="0.002"
         android:id="@+id/textView"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/connectionStatusMessage" />
@@ -104,7 +104,8 @@
         android:text="Up"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        tools:layout_editor_absoluteY="285dp" />
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnStop" />
 
     <EditText
         android:id="@+id/connectionStatusMessage"
@@ -119,13 +120,12 @@
 
     <Button
         android:id="@+id/btnConnect"
-        android:layout_width="186dp"
+        android:layout_width="155dp"
         android:layout_height="46dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginTop="7dp"
+        android:layout_marginTop="8dp"
         android:onClick="connectBluetooth"
         android:text="Connect to Robot"
-        app:layout_constraintLeft_toLeftOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        tools:layout_editor_absoluteX="16dp" />
 
 </android.support.constraint.ConstraintLayout>
