@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        connectBluetooth(null);
     }
 
     void printConn(String message) {
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 sendToRobot("D");
                 break;
             case "left":
-                sendToRobot("l");
+                sendToRobot("L");
                 break;
             case "right":
                 sendToRobot("R");
@@ -90,23 +91,23 @@ public class MainActivity extends AppCompatActivity {
             if (bondedDevices.size() == 1) {
                 robotBT = bondedDevices.iterator().next();
             } else {
-                /*
-                for (BluetoothDevice iterator : bondedDevices)
-                {
-                    if(iterator.getAddress().equals(DEVICE_ADDRESS))
-                    {
-                        device=iterator;
-                        found=true;
-                        break;
-                    }
+
+                if (bondedDevices.size() == 0) {
+                    printConn("Can't found any bluetooth connections");
+                    return;
                 }
-                */
+                printConn("More bluetooth connections found : "+bondedDevices.size());
+
                 for (BluetoothDevice iterator : bondedDevices)
                 {
                     printConn(iterator.getAddress()+": "+iterator.getName());
+                    if(iterator.getName().equals("HC-06"))
+                    {
+                        robotBT=iterator;
+                    }
+
                 }
-                printConn("Too much or zero bluetooth connections: "+bondedDevices.size());
-                return;
+
             }
         }
         printConn("Found: " + robotBT.getAddress() + ", " + robotBT.getName());
