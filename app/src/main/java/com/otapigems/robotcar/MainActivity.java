@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
+    RobotCommander robotCommander;
+
     BluetoothDevice robotBT;
     BluetoothSocket robotSocket;
     private final String DEVICE_ADDRESS="20:13:10:15:33:66";
