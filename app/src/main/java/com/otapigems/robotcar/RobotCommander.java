@@ -37,6 +37,10 @@ public class RobotCommander {
          */
         public int motorLeft = 0;
         /**
+         * Stop motors when this time (milliseconds) runs out. Default is 300
+         */
+        public int motorTimer = 300;
+        /**
          * Set the neckPosition. 0=left, 90 ahead (default), 180=right
          */
         public int neckPosition = 90;
@@ -75,16 +79,8 @@ public class RobotCommander {
         robotCommAsk.motorLeft = 255;
         robotCommAsk.motorRight = 255;
         sendToRobot();
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                robotCommAsk.motorLeft = 0;
-                robotCommAsk.motorRight = 0;
-                sendToRobot();
-            }
-        }, 300);
-        handler.removeCallbacks(Runnable run);
+        robotCommAsk.motorLeft = 0;
+        robotCommAsk.motorRight = 0;
     }
 
     void print(String message)
