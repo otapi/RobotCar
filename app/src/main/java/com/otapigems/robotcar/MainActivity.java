@@ -4,8 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,18 +17,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
-    RobotCommander robotCommander;
+    RobotCommander robotCommander = null;
 
-    BluetoothDevice robotBT;
-    BluetoothSocket robotSocket;
-    private final String DEVICE_ADDRESS="20:13:10:15:33:66";
     private final UUID PORT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");//Serial Port Service ID
-    private OutputStream outputStream;
-    private InputStream inputStream;
-    Thread thread;
-    byte buffer[];
-    int bufferPosition;
-    boolean stopThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
     }
     /** Called when the user taps the Send button */
     public void sendMessage(View view) {
-    // Do something in response to button
-        String IdAsString = view.getResources().getResourceName(view.getId());
+        // Do something in response to button
 
         TextView textView = (TextView) findViewById(R.id.textView);
         textView.setText(view.getTag().toString());
@@ -55,29 +43,33 @@ public class MainActivity extends AppCompatActivity {
 
         switch (view.getTag().toString()) {
             case "up":
-                sendToRobot("U");
+                robotCommander.sendToRobot("U");
                 break;
             case "down":
-                sendToRobot("D");
+                robotCommander.sendToRobot("D");
                 break;
             case "left":
-                sendToRobot("L");
+                robotCommander.sendToRobot("L");
                 break;
             case "right":
-                sendToRobot("R");
+                robotCommander.sendToRobot("R");
                 break;
             case "stop":
-                sendToRobot("S");
+                robotCommander.sendToRobot("S");
                 break;
         }
     }
 
     public void connectBluetooth(View view) {
         printConn("Try to connect...");
+        robotCommander = null;
+        BluetoothDevice robotBT = null;
+        BluetoothSocket robotSocket;
+
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetoothAdapter == null) {
-            printConn("Device doesnt Support Bluetooth");
+            printConn("Device doesn't Support Bluetooth");
             return;
         }
         if (!bluetoothAdapter.isEnabled()) {
@@ -112,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+
         printConn("Found: " + robotBT.getAddress() + ", " + robotBT.getName());
 
         try {
@@ -122,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
             printConn("Error: " + e.getMessage());
             return;
         }
+        OutputStream outputStream;
+        InputStream inputStream;
         try {
             outputStream = robotSocket.getOutputStream();
 
@@ -131,67 +126,9 @@ public class MainActivity extends AppCompatActivity {
             printConn("Error: " + e.getMessage());
             return;
         }
-
+        robotCommander = new RobotCommander(robotSocket, outputStream, inputStream);
 
         printConn("Connected: " + robotBT.getAddress() + ", " + robotBT.getName());
-        //beginListenForData();
     }
 
-    void sendToRobot(String mess) {
-        mess.concat("\n");
-        try {
-            outputStream.write(mess.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void beginListenForData()
-    {
-        final Handler handler = new Handler();
-        stopThread = false;
-        buffer = new byte[1024];
-
-        Thread thread  = new Thread(new Runnable()
-        {
-            public void run()
-            {
-                while(!Thread.currentThread().isInterrupted() && !stopThread)
-                {
-                    try
-                    {
-                        int byteCount = inputStream.available();
-                        if(byteCount > 0)
-                        {
-                            byte[] rawBytes = new byte[byteCount];
-                            inputStream.read(rawBytes);
-                            final String string=new String(rawBytes,"UTF-8");
-                            handler.post(new Runnable() {
-                                public void run()
-                                {
-                                    Log.d("Data incoming",string);
-                                }
-                            });
-
-                        }
-                    }
-                    catch (IOException ex)
-                    {
-                        stopThread = true;
-                    }
-                }
-            }
-        });
-
-        thread.start();
-    }
-
-    public void onClickStop(View view) throws IOException {
-        stopThread = true;
-        outputStream.close();
-        inputStream.close();
-        robotSocket.close();
-
-
-    }
 }
