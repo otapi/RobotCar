@@ -10,14 +10,15 @@ int outputPin = 5;   // define pin for sensor trig
 
 Servo myservo;        // set myservo
 
-elapsedMillis timeElapsed; 
+elapsedMillis timeElapsed;
+short timer;
 
 void setup()
 {
   Serial.begin(9600);     // define pin for motor output
 
   //Serial.write("Power On");
-  
+
   pinMode(pinLB, OUTPUT); // pin 12
   pinMode(pinLF, OUTPUT); // pin 3 (PWM)
   pinMode(pinRB, OUTPUT); // pin 13
@@ -25,15 +26,16 @@ void setup()
   pinMode(inputPin, INPUT);    // define input pin for sensor
   pinMode(outputPin, OUTPUT);  // define output pin for sensor
 
-  // attaches the servo on pin 9 to the servo object 
+  // attaches the servo on pin 9 to the servo object
   myservo.attach(9);
   myservo.write(90);
   timeElapsed = 0;
+  timer = -1;
 }
 
 int distance()   // measure the distance ahead (cm)
 {
-  
+
   digitalWrite(outputPin, LOW);   // ultrasonic sensor transmit low level signal 2μs
   delayMicroseconds(2);
   digitalWrite(outputPin, HIGH);  // ultrasonic sensor transmit high level signal10μs, at least 10μs
@@ -44,61 +46,118 @@ int distance()   // measure the distance ahead (cm)
   return Fdistance;              // read the distance into Fdist
 }
 
-char inData[20]; // Allocate some space for the string
-char inChar=-1; // Where to store the character read
-byte index = 0; // Index into array; where to store the character
 
-void setup() {
-
+short bytesToShort(byte first, byte second) {
+  short x = (short)(128 * ((byte)(first & (byte)0x7f)) + second);
 }
 
-void command(string cmd) {
+void SerialWriteBytes(byte mess[], int llength) {
+  Serial.println();
+  for(int i=0;i<llength;i++){
+    // Serial.write(mess[i]);
+    Serial.println(String(i)+": "+(char) mess[i] + " "+ String((byte) mess[i]));
+  }
+}
+
+void command(byte cmd[]) {
+  Serial.print("-SubCommand: ");
+  SerialWriteBytes(cmd, 10);
+  Serial.println();
+  byte temp[4];
+
+  // TODO: motor commands should happen at once!
+  
   switch (cmd[0]) {
-            case 'l':
-              digitalWrite(pinLB, HIGH);
-              analogWrite(pinLF, cmd[1]);
-              command(cmd.substring(2);
-              break;
-            case 'L':
-              digitalWrite(pinLB, LOW);
-              analogWrite(pinLF, cmd[1]);
-              command(cmd.substring(2);
-              break;
-            case 'r':
-              digitalWrite(pinLB, LOW);
-              analogWrite(pinLF, cmd[1]);
+    case 'l':
+      Serial.println("MotoL"+String((int) cmd[1]));
+      digitalWrite(pinRB, HIGH);
+      analogWrite(pinRF, cmd[1]);
+      temp[0] = cmd[2];
+      temp[1] = cmd[3];
+      temp[2] = cmd[4];
+      temp[3] = cmd[5];
 
-              // TODO: combine two bytes to a short: http://projectsfromtech.blogspot.hu/2013/09/combine-2-bytes-into-int-on-arduino.html
-              short timer = cmd[2]+cmd[4];
-              break;
-            case 'R':
-              digitalWrite(pinLB, HIGH);
-              analogWrite(pinLF, cmd[1]);
-              command(cmd.substring(2);
-              break;
-            
-          }
+      command(temp);
+      break;
+    case 'L':
+      Serial.println("MotoL"+String((int) cmd[1]));
+      
+      digitalWrite(pinRB, LOW);
+      analogWrite(pinRF, cmd[1]);
+      temp[0] = cmd[2];
+      temp[1] = cmd[3];
+      temp[2] = cmd[4];
+      temp[3] = cmd[5];
+      
+      command(temp);
+      break;
+    case 'r':
+      Serial.println("MotoR"+String((int) cmd[1]));
+      
+      digitalWrite(pinLB, LOW);
+      analogWrite(pinLF, cmd[1]);
+
+      timer = bytesToShort(cmd[2], cmd[3]);
+      Serial.println("Timer"+String(timer));
+      
+      timeElapsed = 0;
+      break;
+    case 'R':
+      Serial.println("MotoR"+String((int) cmd[1]));
+      
+      digitalWrite(pinLB, HIGH);
+      analogWrite(pinLF, cmd[1]);
+      timer = bytesToShort(cmd[2], cmd[3]);
+      Serial.println("Timer"+String(timer));
+      timer = 300;
+      
+      timeElapsed = 0;
+      break;
+  }
 }
+byte inData[20]; // Allocate some space for the string
+byte inChar = -1; // Where to store the character read
+byte index = 0; // Index into array; where to store the character
 
 void loop()
 {
-    while (Serial.available() > 0) // Don't read unless
-                                   // there you know there is data
-    {
-        inChar = Serial.read(); // Read a character
-        inData[index] = inChar; // Store it
-        index++; // Increment where to write next
-        if (inChar == '\n') {
-          inData[index] = '\0'; // Null terminate the string
-          index = 0;
-          //TODO: do the command
-          command(inData);
-          
-        }
-        if (index>10) {
-          // Command should be shorter - error!
-          break;
-        }
+  while (Serial.available() > 0) // Don't read unless
+    // there you know there is data
+  {
+    inChar = Serial.read(); // Read a character
+    inData[index] = inChar; // Store it
+    index++; // Increment where to write next
+    Serial.write(inChar);
+  
+    if (inChar == '@') {
+      index = 0;
+      Serial.print("-Command: ");
+      SerialWriteBytes(inData, 10);
+      Serial.println();
+      command(inData);
+
     }
+    if (index > 10) {
+      // Command should be shorter - error!
+      break;
+    }
+  }
+
+  if (timer >= 0) {
+    Serial.println("Timervalue"+String(timer));
+      
+    timer = timer - timeElapsed;
+    timeElapsed = 0;
+    if (timer < 0) {
+      Serial.println("Timer run out - stop motors");
+    
+      timer = -1;
+      // Stop
+      digitalWrite(pinLB, HIGH);
+      digitalWrite(pinRB, LOW);
+      analogWrite(pinLF, 0);
+      analogWrite(pinRF, 0);
+    }  
+  }
 }
 

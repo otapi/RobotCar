@@ -43,19 +43,15 @@ public class MainActivity extends AppCompatActivity {
 
         switch (view.getTag().toString()) {
             case "up":
-                robotCommander.sendToRobot("U");
+                robotCommander.forward();
                 break;
             case "down":
-                robotCommander.sendToRobot("D");
                 break;
             case "left":
-                robotCommander.sendToRobot("L");
                 break;
             case "right":
-                robotCommander.sendToRobot("R");
                 break;
             case "stop":
-                robotCommander.sendToRobot("S");
                 break;
         }
     }

@@ -16,9 +16,39 @@ import java.nio.ByteBuffer;
  */
 
 public class RobotCommander {
-    private byte intToUnsignedByte(int in) {
-        return (byte) (in-Integer.MAX_VALUE);
+    private BluetoothSocket robotSocket;
+    private OutputStream outputStream;
+    private InputStream inputStream;
+
+    private boolean stopThread;
+
+    public RobotCommander(BluetoothSocket robotSocket, OutputStream outputStream, InputStream inputStream){
+        this.robotSocket = robotSocket;
+        this.outputStream = outputStream;
+        this.inputStream = inputStream;
+        beginListenForData();
+        //reset();
     }
+    private byte intToUnsignedByte(int in) {
+        return (byte) (in-(Integer.MAX_VALUE+1));
+    }
+    private byte[] shortToByteArray(int x) {
+        short unsignedX = (short) x;
+        byte res[]=new byte[2];
+        res[0]= (byte)(((short)(unsignedX>>7)) & ((short)0x7f) | 0x80 );
+        res[1]= (byte)((unsignedX & ((short)0x7f)));
+        return res;
+    }
+    private byte[] addChar(byte[] a, char theNewChar) {
+        return addByte(a, (byte) theNewChar);
+    }
+    private byte[] addByte(byte[] a, byte theNewByte) {
+        byte[] c = new byte[a.length + 1];
+        System.arraycopy(a, 0, c, 0, a.length);
+        c[a.length] = theNewByte;
+        return c;
+    }
+
     /**
      * Alert back asynch if ultrasonic sensor sees something at this distance (cm) or closer. To disable, set it to 0 (by default)
      * @param distance in cm
@@ -35,8 +65,10 @@ public class RobotCommander {
         if (distance<0 || distance > 255) {
             throw new IndexOutOfBoundsException("Distance should be between 0..255");
         }
-
-        sendToRobot("d"+intToUnsignedByte(distance));
+        byte[] msg = new byte[2];
+        msg[0] = (byte) 'd';
+        msg[1] = intToUnsignedByte(distance);
+        sendToRobot(msg);
     }
 
     /**
@@ -62,23 +94,25 @@ public class RobotCommander {
         if (timer<0 || timer>32767) {
             throw new IndexOutOfBoundsException("Motor timer is out of bounds. Should be between 0..32,767.");
         }
-        String command = "";
+        byte[] command = new byte[6];
         if (left < 0) {
-            command+= "l";
+            command[0] = 'l';
         } else {
-            command+="L";
+            command[0] = 'L';
         }
-        command+=intToUnsignedByte(Math.abs(left));
+        command[1] =intToUnsignedByte(Math.abs(left));
 
         if (right < 0) {
-            command+= "r";
+            command[2] = 'r';
         } else {
-            command+="R";
+            command[2]='R';
         }
-        command+=intToUnsignedByte(Math.abs(right));
+        command[3]=intToUnsignedByte(Math.abs(right));
 
-        short unsignedTimer = (short) ((short)timer- Short.MAX_VALUE);
-        command+=ByteBuffer.allocate(2).putShort(unsignedTimer).array();
+        byte ut[] = shortToByteArray(timer);
+        command[4] = ut[0];
+        command[5] = ut[1];
+
         sendToRobot(command);
     }
 
@@ -90,7 +124,10 @@ public class RobotCommander {
         if (position<0 || position > 180) {
             throw new IndexOutOfBoundsException("Neck position should between 0..180");
         }
-        sendToRobot("n"+intToUnsignedByte(position));
+        byte[] msg = new byte[2];
+        msg[0] = (byte) 'n';
+        msg[1] = intToUnsignedByte(position);
+        sendToRobot(msg);
     }
 
     public void reset() {
@@ -100,21 +137,10 @@ public class RobotCommander {
         cmdNeckPosition(90);
     }
 
-    private BluetoothSocket robotSocket;
-    private OutputStream outputStream;
-    private InputStream inputStream;
 
-    private boolean stopThread;
-
-    public RobotCommander(BluetoothSocket robotSocket, OutputStream outputStream, InputStream inputStream){
-        this.robotSocket = robotSocket;
-        this.outputStream = outputStream;
-        this.inputStream = inputStream;
-        reset();
-    }
 
     public void forward() {
-        cmdMotor(255,255,300);
+        cmdMotor(200,200,300);
     }
 
     void print(String message)
@@ -122,16 +148,16 @@ public class RobotCommander {
         Log.d("RobotCommander", message);
     }
 
-    public void sendToRobot(String message) {
-        message.concat("\n");
+    public void sendToRobot(byte[] message) {
+
         try {
-            outputStream.write(message.getBytes());
+            outputStream.write(addChar(message, '@'));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-        /*
+
     void beginListenForData()
     {
         Thread listeningThread;
@@ -145,6 +171,7 @@ public class RobotCommander {
         {
             public void run()
             {
+                String messageBuffer = "";
                 while(!Thread.currentThread().isInterrupted() && !stopThread)
                 {
                     try
@@ -155,12 +182,20 @@ public class RobotCommander {
                             byte[] rawBytes = new byte[byteCount];
                             inputStream.read(rawBytes);
                             final String string=new String(rawBytes,"UTF-8");
-                            handler.post(new Runnable() {
-                                public void run()
-                                {
-                                    Log.d("Data incoming",string);
-                                }
-                            });
+                            messageBuffer+= string;
+
+                            while(messageBuffer.contains("\n")) {
+                                final String outs = messageBuffer.substring(0,messageBuffer.indexOf("\n"));
+                                messageBuffer = messageBuffer.substring(messageBuffer.indexOf("\n")+1);
+
+                                handler.post(new Runnable() {
+                                    public void run()
+                                    {
+                                        Log.d("Data incoming",outs);
+                                    }
+                                });
+                            }
+
 
                         }
                     }
@@ -174,7 +209,7 @@ public class RobotCommander {
 
         listeningThread.start();
     }
-    */
+
 
     public void close() throws IOException {
         reset();
