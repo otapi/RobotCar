@@ -1,5 +1,7 @@
 #include <Servo.h>
 #include <elapsedMillis.h>
+
+const String firmwareVersion  = "robotCar/base/1"; 
 int pinLB = 12;     // define pin 12
 int pinLF = 3;     // define pin 3
 int pinRB = 13;    // define pin 13
@@ -13,6 +15,11 @@ Servo myservo;        // set myservo
 elapsedMillis timeElapsed;
 short timer;
 
+union shortbyte {
+    unsigned short ss; 
+    byte bb[2];
+  } sb;
+  
 void setup()
 {
   Serial.begin(9600);     // define pin for motor output
@@ -47,10 +54,6 @@ int distance()   // measure the distance ahead (cm)
 }
 
 
-short bytesToShort(byte first, byte second) {
-  short x = (short)(128 * ((byte)(first & (byte)0x7f)) + second);
-}
-
 void SerialWriteBytes(byte mess[], int llength) {
   Serial.println();
   for(int i=0;i<llength;i++){
@@ -60,14 +63,18 @@ void SerialWriteBytes(byte mess[], int llength) {
 }
 
 void command(byte cmd[]) {
-  Serial.print("-SubCommand: ");
+  /*Serial.print("-SubCommand: ");
   SerialWriteBytes(cmd, 10);
   Serial.println();
+  */
   byte temp[4];
 
   // TODO: motor commands should happen at once!
   
   switch (cmd[0]) {
+    case 'V':
+      Serial.println("@V@"+firmwareVersion);
+      break;
     case 'l':
       Serial.println("MotoL"+String((int) cmd[1]));
       digitalWrite(pinRB, HIGH);
@@ -80,7 +87,7 @@ void command(byte cmd[]) {
       command(temp);
       break;
     case 'L':
-      Serial.println("MotoL"+String((int) cmd[1]));
+      Serial.println("MotoL: "+String((int) cmd[1]));
       
       digitalWrite(pinRB, LOW);
       analogWrite(pinRF, cmd[1]);
@@ -92,24 +99,26 @@ void command(byte cmd[]) {
       command(temp);
       break;
     case 'r':
-      Serial.println("MotoR"+String((int) cmd[1]));
+      Serial.println("MotoR: "+String((int) cmd[1]));
       
       digitalWrite(pinLB, LOW);
       analogWrite(pinLF, cmd[1]);
-
-      timer = bytesToShort(cmd[2], cmd[3]);
-      Serial.println("Timer"+String(timer));
+      sb.bb[0] = cmd[2];
+      sb.bb[1] = cmd[3];
+      timer = sb.ss;
+      Serial.println("Timer: "+String(timer));
       
       timeElapsed = 0;
       break;
     case 'R':
-      Serial.println("MotoR"+String((int) cmd[1]));
+      Serial.println("MotoR: "+String((int) cmd[1]));
       
       digitalWrite(pinLB, HIGH);
       analogWrite(pinLF, cmd[1]);
-      timer = bytesToShort(cmd[2], cmd[3]);
-      Serial.println("Timer"+String(timer));
-      timer = 300;
+      sb.bb[0] = cmd[2];
+      sb.bb[1] = cmd[3];
+      timer = sb.ss;
+      Serial.println("Timer: "+String(timer));
       
       timeElapsed = 0;
       break;

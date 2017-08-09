@@ -46,13 +46,23 @@ public class MainActivity extends AppCompatActivity {
                 robotCommander.forward();
                 break;
             case "down":
+                robotCommander.backward();
                 break;
             case "left":
+                robotCommander.turnLeft();
                 break;
             case "right":
+                robotCommander.turnRight();
                 break;
             case "stop":
+                robotCommander.reset();
                 break;
+            case "version":
+                textView.setText("Checking the version...");
+                textView.setText(robotCommander.cmdTellFirmwareVersion());
+                break;
+
+
         }
     }
 

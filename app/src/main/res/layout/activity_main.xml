@@ -7,8 +7,8 @@
     tools:context="com.otapigems.robotcar.MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="303dp"
+        android:layout_height="22dp"
         android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -18,18 +18,18 @@
         android:layout_marginBottom="283dp"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/connectionStatusMessage"
-        app:layout_constraintVertical_bias="0.041" />
+        app:layout_constraintVertical_bias="0.042" />
 
     <TextView
         android:id="@+id/connectionStatusMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="303dp"
+        android:layout_height="19dp"
         android:text="Hello World!"
         app:layout_constraintHorizontal_bias="0.065"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="7dp" />
 
     <Button
         android:id="@+id/btnStop"
@@ -116,5 +116,16 @@
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="@+id/textView"
         app:layout_constraintHorizontal_bias="0.0" />
+
+    <Button
+        android:id="@+id/btnFirmwareVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:onClick="sendMessage"
+        android:tag="version"
+        android:text="Get Firmware Version"
+        app:layout_constraintTop_toBottomOf="@+id/btnConnect"
+        tools:layout_editor_absoluteX="16dp" />
 
 </android.support.constraint.ConstraintLayout>

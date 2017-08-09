@@ -21,22 +21,22 @@ public class RobotCommander {
     private InputStream inputStream;
 
     private boolean stopThread;
+    private Thread listeningThread;
 
     public RobotCommander(BluetoothSocket robotSocket, OutputStream outputStream, InputStream inputStream){
         this.robotSocket = robotSocket;
         this.outputStream = outputStream;
         this.inputStream = inputStream;
         beginListenForData();
-        //reset();
+        reset();
     }
     private byte intToUnsignedByte(int in) {
         return (byte) (in-(Integer.MAX_VALUE+1));
     }
     private byte[] shortToByteArray(int x) {
-        short unsignedX = (short) x;
         byte res[]=new byte[2];
-        res[0]= (byte)(((short)(unsignedX>>7)) & ((short)0x7f) | 0x80 );
-        res[1]= (byte)((unsignedX & ((short)0x7f)));
+        res[0] = (byte) (x);
+        res[1] = (byte) ((x >> 8) & 0xff);
         return res;
     }
     private byte[] addChar(byte[] a, char theNewChar) {
@@ -48,7 +48,9 @@ public class RobotCommander {
         c[a.length] = theNewByte;
         return c;
     }
-
+    private void sleep(int milliseconds) {
+        try{ Thread.sleep(milliseconds); }catch(InterruptedException e){ }
+    }
     /**
      * Alert back asynch if ultrasonic sensor sees something at this distance (cm) or closer. To disable, set it to 0 (by default)
      * @param distance in cm
@@ -71,6 +73,33 @@ public class RobotCommander {
         sendToRobot(msg);
     }
 
+    String firmwareVersion;
+    public void cmdAskFirmwareVersion() {
+        firmwareVersion = null;
+        sendToRobot("V");
+    }
+
+    /**
+     * Answer back the measured distance ahead
+     * @return obstacle distance in cm
+     */
+    public String cmdTellFirmwareVersion() throws InterruptedException {
+        listeningThread.
+        int timeout = 30;
+
+        while (firmwareVersion == null) {
+            sleep(100);
+            timeout--;
+            if (timeout == 0) {
+                return "Could not retrieve the version";
+            }
+        }
+
+        return firmwareVersion;
+    }
+    void setFirmware(String fw) {
+        firmwareVersion = fw;
+    }
     /**
      * Answer back the measured distance ahead
      * @return obstacle distance in cm
@@ -96,16 +125,16 @@ public class RobotCommander {
         }
         byte[] command = new byte[6];
         if (left < 0) {
-            command[0] = 'l';
-        } else {
             command[0] = 'L';
+        } else {
+            command[0] = 'l';
         }
         command[1] =intToUnsignedByte(Math.abs(left));
 
         if (right < 0) {
-            command[2] = 'r';
+            command[2] = 'R';
         } else {
-            command[2]='R';
+            command[2]='r';
         }
         command[3]=intToUnsignedByte(Math.abs(right));
 
@@ -140,7 +169,16 @@ public class RobotCommander {
 
 
     public void forward() {
-        cmdMotor(200,200,300);
+        cmdMotor(255,255,300);
+    }
+    public void backward() {
+        cmdMotor(-255,-255,300);
+    }
+    public void turnLeft() {
+        cmdMotor(-100,100,200);
+    }
+    public void turnRight() {
+        cmdMotor(100,-100,200);
     }
 
     void print(String message)
@@ -157,10 +195,18 @@ public class RobotCommander {
         }
     }
 
+    public void sendToRobot(String message) {
+        byte[] msg = new byte[message.length()];
+        for (int i = 0; i < message.length(); i++) {
+            msg[i] = (byte) message.charAt(i);
+        }
+        sendToRobot(msg);
+    }
+
 
     void beginListenForData()
     {
-        Thread listeningThread;
+
         byte buffer[];
 
         final Handler handler = new Handler();
@@ -192,6 +238,10 @@ public class RobotCommander {
                                     public void run()
                                     {
                                         Log.d("Data incoming",outs);
+                                        if (outs.startsWith("@V@")) {
+                                            setFirmware(outs.substring((3)));
+                                        }
+
                                     }
                                 });
                             }
