@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include <elapsedMillis.h>
 
-const String firmwareVersion  = "robotCar/base/1"; 
+const String firmwareVersion  = "robotCar.base.1"; 
 int pinLB = 12;     // define pin 12
 int pinLF = 3;     // define pin 3
 int pinRB = 13;    // define pin 13
@@ -76,9 +76,8 @@ void command(byte cmd[]) {
       Serial.println("@V@"+firmwareVersion);
       break;
     case 'l':
-      Serial.println("MotoL"+String((int) cmd[1]));
-      digitalWrite(pinRB, HIGH);
-      analogWrite(pinRF, cmd[1]);
+      digitalWrite(pinLB, HIGH);
+      analogWrite(pinLF, cmd[1]);
       temp[0] = cmd[2];
       temp[1] = cmd[3];
       temp[2] = cmd[4];
@@ -87,10 +86,8 @@ void command(byte cmd[]) {
       command(temp);
       break;
     case 'L':
-      Serial.println("MotoL: "+String((int) cmd[1]));
-      
-      digitalWrite(pinRB, LOW);
-      analogWrite(pinRF, cmd[1]);
+      digitalWrite(pinLB, LOW);
+      analogWrite(pinLF, cmd[1]);
       temp[0] = cmd[2];
       temp[1] = cmd[3];
       temp[2] = cmd[4];
@@ -99,26 +96,21 @@ void command(byte cmd[]) {
       command(temp);
       break;
     case 'r':
-      Serial.println("MotoR: "+String((int) cmd[1]));
       
-      digitalWrite(pinLB, LOW);
-      analogWrite(pinLF, cmd[1]);
+      digitalWrite(pinRB, LOW);
+      analogWrite(pinRF, cmd[1]);
       sb.bb[0] = cmd[2];
       sb.bb[1] = cmd[3];
       timer = sb.ss;
-      Serial.println("Timer: "+String(timer));
       
       timeElapsed = 0;
       break;
     case 'R':
-      Serial.println("MotoR: "+String((int) cmd[1]));
-      
-      digitalWrite(pinLB, HIGH);
-      analogWrite(pinLF, cmd[1]);
+      digitalWrite(pinRB, HIGH);
+      analogWrite(pinRF, cmd[1]);
       sb.bb[0] = cmd[2];
       sb.bb[1] = cmd[3];
       timer = sb.ss;
-      Serial.println("Timer: "+String(timer));
       
       timeElapsed = 0;
       break;
@@ -136,13 +128,9 @@ void loop()
     inChar = Serial.read(); // Read a character
     inData[index] = inChar; // Store it
     index++; // Increment where to write next
-    Serial.write(inChar);
-  
+    
     if (inChar == '@') {
       index = 0;
-      Serial.print("-Command: ");
-      SerialWriteBytes(inData, 10);
-      Serial.println();
       command(inData);
 
     }
@@ -153,17 +141,11 @@ void loop()
   }
 
   if (timer >= 0) {
-    Serial.println("Timervalue"+String(timer));
-      
     timer = timer - timeElapsed;
     timeElapsed = 0;
     if (timer < 0) {
-      Serial.println("Timer run out - stop motors");
-    
       timer = -1;
       // Stop
-      digitalWrite(pinLB, HIGH);
-      digitalWrite(pinRB, LOW);
       analogWrite(pinLF, 0);
       analogWrite(pinRF, 0);
     }  

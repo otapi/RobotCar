@@ -31,7 +31,7 @@ public class RobotCommander {
         reset();
     }
     private byte intToUnsignedByte(int in) {
-        return (byte) (in-(Integer.MAX_VALUE+1));
+        return (byte) (in);
     }
     private byte[] shortToByteArray(int x) {
         byte res[]=new byte[2];
@@ -124,16 +124,16 @@ public class RobotCommander {
         }
         byte[] command = new byte[6];
         if (left < 0) {
-            command[0] = 'L';
-        } else {
             command[0] = 'l';
+        } else {
+            command[0] = 'L';
         }
         command[1] =intToUnsignedByte(Math.abs(left));
 
         if (right < 0) {
-            command[2] = 'R';
+            command[2] = 'r';
         } else {
-            command[2]='r';
+            command[2]='R';
         }
         command[3]=intToUnsignedByte(Math.abs(right));
 
@@ -184,7 +184,7 @@ public class RobotCommander {
 
     void print(String message)
     {
-        //Log.d("RobotCommander", message);
+        Log.d("RobotCommander", message);
     }
 
     public void sendToRobot(byte[] message) {
