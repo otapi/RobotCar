@@ -176,10 +176,10 @@ public class RobotCommander {
         cmdMotor(-255,-255,300);
     }
     public void turnLeft() {
-        cmdMotor(-100,100,200);
+        cmdMotor(-255,255,200);
     }
     public void turnRight() {
-        cmdMotor(100,-100,200);
+        cmdMotor(255,-255,200);
     }
 
     void print(String message)
