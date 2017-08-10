@@ -84,7 +84,6 @@ public class RobotCommander {
      * @return obstacle distance in cm
      */
     public String cmdTellFirmwareVersion() throws InterruptedException {
-        listeningThread.
         int timeout = 30;
 
         while (firmwareVersion == null) {
@@ -167,7 +166,9 @@ public class RobotCommander {
     }
 
 
-
+    public void stop() {
+        cmdMotor(0,0,1);
+    }
     public void forward() {
         cmdMotor(255,255,300);
     }
@@ -183,7 +184,7 @@ public class RobotCommander {
 
     void print(String message)
     {
-        Log.d("RobotCommander", message);
+        //Log.d("RobotCommander", message);
     }
 
     public void sendToRobot(byte[] message) {
@@ -237,7 +238,7 @@ public class RobotCommander {
                                 handler.post(new Runnable() {
                                     public void run()
                                     {
-                                        Log.d("Data incoming",outs);
+                                        print(outs);
                                         if (outs.startsWith("@V@")) {
                                             setFirmware(outs.substring((3)));
                                         }

@@ -35,15 +35,14 @@
         android:id="@+id/btnStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:onClick="sendMessage"
         android:tag="stop"
         android:text="Stop"
+        app:layout_constraintBottom_toTopOf="@+id/btnDown"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnDown" />
+        app:layout_constraintRight_toRightOf="parent" />
 
     <Button
         android:id="@+id/btnRigh"
@@ -51,11 +50,10 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="-2dp"
-        android:onClick="sendMessage"
+        android:layout_marginTop="-238dp"
         android:tag="right"
         android:text="Right"
-        app:layout_constraintHorizontal_bias="0.962"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/btnStop" />
@@ -67,7 +65,6 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="-2dp"
-        android:onClick="sendMessage"
         android:tag="left"
         android:text="Left"
         app:layout_constraintHorizontal_bias="0.037"
@@ -79,29 +76,27 @@
         android:id="@+id/btnDown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:onClick="sendMessage"
         android:tag="down"
         android:text="Down"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <Button
         android:id="@+id/btnUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:onClick="sendMessage"
         android:tag="up"
         android:text="Up"
+        app:layout_constraintBottom_toTopOf="@+id/btnStop"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnStop" />
+        app:layout_constraintRight_toRightOf="parent" />
 
     <Button
         android:id="@+id/btnConnect"
@@ -116,16 +111,5 @@
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="@+id/textView"
         app:layout_constraintHorizontal_bias="0.0" />
-
-    <Button
-        android:id="@+id/btnFirmwareVersion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:onClick="sendMessage"
-        android:tag="version"
-        android:text="Get Firmware Version"
-        app:layout_constraintTop_toBottomOf="@+id/btnConnect"
-        tools:layout_editor_absoluteX="16dp" />
 
 </android.support.constraint.ConstraintLayout>

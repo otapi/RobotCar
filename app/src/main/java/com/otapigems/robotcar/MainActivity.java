@@ -4,10 +4,13 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -26,44 +29,83 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         connectBluetooth(null);
+
+        Button b = (Button) findViewById(R.id.btnUp);
+        b.setOnTouchListener(onTouchHandler);
+        b = (Button) findViewById(R.id.btnDown);
+        b.setOnTouchListener(onTouchHandler);
+        b = (Button) findViewById(R.id.btnRigh);
+        b.setOnTouchListener(onTouchHandler);
+        b = (Button) findViewById(R.id.btnLeft);
+        b.setOnTouchListener(onTouchHandler);
+        b = (Button) findViewById(R.id.btnStop);
+        b.setOnTouchListener(onTouchHandler);
     }
 
+    private Thread cmdThread;
+    boolean stopThread;
+    View.OnTouchListener onTouchHandler = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            stopThread = false;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    Log.d("Connection", "down");
+                    if (cmdThread != null && cmdThread.isAlive()) {
+                        Log.d("Connection", "Thread is active");
+                        cmdThread.interrupt();
+                        try {
+                            cmdThread.join();
+                        } catch (InterruptedException e) {
+
+                        }
+
+                    }
+                    final String command = v.getTag().toString();
+                    cmdThread = new Thread(new Runnable() {
+                        public void run() {
+                            while (!Thread.currentThread().isInterrupted() && !stopThread) {
+                                switch (command) {
+                                    case "up":
+                                        robotCommander.forward();
+                                        break;
+                                    case "down":
+                                        robotCommander.backward();
+                                        break;
+                                    case "left":
+                                        robotCommander.turnLeft();
+                                        break;
+                                    case "right":
+                                        robotCommander.turnRight();
+                                        break;
+                                }
+                                try {
+                                    Thread.sleep(200);
+                                } catch (InterruptedException e) {
+                                    stopThread = true;
+                                }
+                            }
+                        }
+                    });
+                    cmdThread.start();
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    Log.d("Connection", "before interrupt");
+                    stopThread = true;
+                    cmdThread.interrupt();
+                    Log.d("Connection", "after interrupt");
+                    robotCommander.stop();
+                    return true;
+            }
+            return false;
+        }
+
+    };
     void printConn(String message) {
         TextView textView = (TextView) findViewById(R.id.connectionStatusMessage);
         textView.setText(message);
         Log.d("Connection", message);
-    }
-    /** Called when the user taps the Send button */
-    public void sendMessage(View view) {
-        // Do something in response to button
-
-        TextView textView = (TextView) findViewById(R.id.textView);
-        textView.setText(view.getTag().toString());
-        Log.d("?", view.getTag().toString());
-
-        switch (view.getTag().toString()) {
-            case "up":
-                robotCommander.forward();
-                break;
-            case "down":
-                robotCommander.backward();
-                break;
-            case "left":
-                robotCommander.turnLeft();
-                break;
-            case "right":
-                robotCommander.turnRight();
-                break;
-            case "stop":
-                robotCommander.reset();
-                break;
-            case "version":
-                textView.setText("Checking the version...");
-                textView.setText(robotCommander.cmdTellFirmwareVersion());
-                break;
-
-
-        }
     }
 
     public void connectBluetooth(View view) {
