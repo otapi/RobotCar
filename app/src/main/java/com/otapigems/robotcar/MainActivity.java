@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     RobotCommander robotCommander = null;
 
     private final UUID PORT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");//Serial Port Service ID
-
+    SeekBar wheelBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +41,38 @@ public class MainActivity extends AppCompatActivity {
         b.setOnTouchListener(onTouchHandler);
         b = (Button) findViewById(R.id.btnStop);
         b.setOnTouchListener(onTouchHandler);
+
+        SeekBar s = (SeekBar) findViewById(R.id.headBar);
+        s.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                robotCommander.cmdNeckPosition(seekBar.getProgress());
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        wheelBar = (SeekBar) findViewById(R.id.wheelBar);
+        wheelBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBar.setProgress(100);
+            }
+        });
     }
+
+
 
     private Thread cmdThread;
     boolean stopThread;
@@ -67,7 +99,20 @@ public class MainActivity extends AppCompatActivity {
                             while (!Thread.currentThread().isInterrupted() && !stopThread) {
                                 switch (command) {
                                     case "up":
-                                        robotCommander.forward();
+                                        //robotCommander.forward();
+                                        int left = 255;
+                                        int right = 255;
+                                        int wheel = wheelBar.getProgress();
+                                        if (wheel <100) {
+                                            left = 255-(240*(100-wheel)/100);
+
+                                        }
+                                        if (wheel >100) {
+                                            right = 255-(240*(wheel-100)/100);
+
+                                        }
+
+                                        robotCommander.cmdMotor(left, right, 300);
                                         break;
                                     case "down":
                                         robotCommander.backward();

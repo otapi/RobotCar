@@ -75,6 +75,9 @@ void command(byte cmd[]) {
     case 'V':
       Serial.println("@V@"+firmwareVersion);
       break;
+    case 'n':
+      myservo.write(cmd[1]);
+      break;
     case 'l':
       digitalWrite(pinLB, HIGH);
       analogWrite(pinLF, cmd[1]);

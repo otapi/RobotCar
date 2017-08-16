@@ -145,16 +145,16 @@ public class RobotCommander {
     }
 
     /**
-     * Set neck position. 0 is left, 90 is ahead, 180 is right
+     * Set neck position. 0 is left, 90 is ahead, 179 is right
      * @param position degrees
      */
     public void cmdNeckPosition(int position) {
-        if (position<0 || position > 180) {
+        if (position<0 || position > 179) {
             throw new IndexOutOfBoundsException("Neck position should between 0..180");
         }
         byte[] msg = new byte[2];
         msg[0] = (byte) 'n';
-        msg[1] = intToUnsignedByte(position);
+        msg[1] = (byte) (180 - intToUnsignedByte(position));
         sendToRobot(msg);
     }
 
