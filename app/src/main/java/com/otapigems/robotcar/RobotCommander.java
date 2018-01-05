@@ -1,19 +1,30 @@
+/*
+    RobotCar.RobotCommander
+    Communication layer via Bluetooth to control a rolling robot.
+    Copyright (C) 2018  Barnabás Nagy - otapiGems.com - otapiGems@protonmail.ch
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.otapigems.robotcar;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
-import com.google.gson.Gson;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-
-/**
- * Created by otapi_aocivry on 2017. 08. 06..
- */
 
 public class RobotCommander {
     private BluetoothSocket robotSocket;
@@ -208,12 +219,8 @@ public class RobotCommander {
     void beginListenForData()
     {
 
-        byte buffer[];
-
         final Handler handler = new Handler();
         stopThread = false;
-        buffer = new byte[1024];
-
         listeningThread = new Thread(new Runnable()
         {
             public void run()
