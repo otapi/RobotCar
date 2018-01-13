@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
 
         if (bondedDevices.isEmpty()) {
-            printConn("Please Pair the Device first");
+            printConn("Please Pair the Device HC-06 first. The pairing code is 1234.");
             return;
         } else {
             if (bondedDevices.size() == 1) {
@@ -217,7 +217,10 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-
+        if (robotBT == null) {
+            printConn("Please Pair the Device HC-06 first. The pairing code is 1234.");
+            return;
+        }
         printConn("Found: " + robotBT.getAddress() + ", " + robotBT.getName());
 
         try {
